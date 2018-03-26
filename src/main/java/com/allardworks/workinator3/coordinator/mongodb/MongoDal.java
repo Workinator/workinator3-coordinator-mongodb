@@ -1,6 +1,6 @@
 package com.allardworks.workinator3.coordinator.mongodb;
 
-import com.allardworks.workinator3.contracts.PartitionConfiguration;
+import com.allardworks.workinator3.core.PartitionConfiguration;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
@@ -15,7 +15,7 @@ import org.bson.Document;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.springframework.stereotype.Service;
 
-import static com.allardworks.workinator3.mongo2.DocumentUtility.doc;
+import static com.allardworks.workinator3.coordinator.mongodb.DocumentUtility.doc;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 

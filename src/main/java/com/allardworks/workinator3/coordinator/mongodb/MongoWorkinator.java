@@ -1,7 +1,8 @@
 package com.allardworks.workinator3.coordinator.mongodb;
 
-import com.allardworks.workinator3.commands.*;
-import com.allardworks.workinator3.contracts.*;
+import com.allardworks.workinator3.coordinator.AssignmentStrategy;
+import com.allardworks.workinator3.core.*;
+import com.allardworks.workinator3.core.commands.*;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoWriteException;
 import lombok.NonNull;
@@ -10,14 +11,14 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.bson.Document;
 import org.springframework.stereotype.Service;
+import com.allardworks.workinator3.core.Assignment;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.allardworks.workinator3.core.ConvertUtility.*;
+import static com.allardworks.workinator3.coordinator.mongodb.DocumentUtility.doc;
 import static com.allardworks.workinator3.core.ConvertUtility.MIN_DATE;
-import static com.allardworks.workinator3.mongo2.DocumentUtility.doc;
 
 /**
  * Mongo implementation of the workinator.
