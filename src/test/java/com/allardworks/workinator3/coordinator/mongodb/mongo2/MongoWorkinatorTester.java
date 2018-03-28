@@ -15,10 +15,9 @@ public class MongoWorkinatorTester implements WorkinatorTester {
 
     @Override
     public Workinator getWorkinator() {
-        dal = new MongoDal(MongoConfiguration
-                .builder()
-                .databaseName("test")
-                .build());
+        val config = new MongoConfiguration();
+        config.setDatabaseName("test");
+        dal = new MongoDal(config);
         val cache = new PartitionConfigurationCache(dal);
         return new MongoWorkinator(dal, cache, new WhatsNextAssignmentStrategy(dal, cache));
     }

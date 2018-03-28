@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.apache.commons.lang3.time.DateUtils;
 import org.bson.Document;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -22,6 +23,7 @@ import static com.mongodb.client.model.ReturnDocument.AFTER;
 /**
  * Assignment strategy that determines a worker's assignment.
  */
+@Component
 @RequiredArgsConstructor
 public class WhatsNextAssignmentStrategy implements AssignmentStrategy {
     public final static String RULE1 = "Rule 1 - Not being worked on, and is due to be checked.";

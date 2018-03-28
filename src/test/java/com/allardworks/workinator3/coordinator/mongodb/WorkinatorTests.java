@@ -9,6 +9,7 @@ import lombok.val;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static com.allardworks.workinator3.coordinator.mongodb.DocumentUtility.doc;
 import static com.allardworks.workinator3.coordinator.mongodb.WhatsNextAssignmentStrategy.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -24,6 +25,32 @@ public abstract class WorkinatorTests {
 
     private WorkerStatus createStatus(final String consumerId) {
         return new WorkerStatus(new WorkerId(new ConsumerRegistration(new ConsumerId(consumerId), ""), 1));
+    }
+
+    /**
+     * Create and retrieve partitions.
+     *
+     * This exercises the GET part, for which a bug was discovered on 3/25/2018.
+     * BSON.DOCUMENT doeesn't support dot notation, so values in child objects (status.workers)
+     * were coming back null.
+     * @throws Exception
+     */
+    @Test
+    public void getPartition() throws Exception {
+        try (val tester = new WorkinatorTestHarness(getTester())) {
+            tester
+                    .createPartition("a")
+                    .createPartition("b")
+                    .createWorker("a")
+                    .createWorker("b")
+                    .assertGetAssignment("a", "a", RULE1)
+                    .assertGetAssignment("b", "b", RULE1);
+
+            val partitions = tester.getTester().getWorkinator().getPartitions();
+            assertEquals(2, partitions.size());
+            assertEquals(1, partitions.get(0).getWorkers().size());
+            assertEquals(1, partitions.get(1).getWorkers().size());
+        }
     }
 
     @Test

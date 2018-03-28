@@ -1,24 +1,18 @@
 package com.allardworks.workinator3.coordinator.mongodb;
 
-import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
-@RequiredArgsConstructor
-@Getter
-@Builder
+
+@Data
+@Component
+@ConfigurationProperties(prefix = "coordinator.monogdb")
 public class MongoConfiguration {
-    private final String host;
-    private final int port;
-    private final String databaseName;
-    private final String partitionsCollectionName;
-    private final String consumersCollectionName;
-
-    public static class MongoConfigurationBuilder {
-        private String host = "localhost";
-        private int port = 27017;
-        private String databaseName = "Workinator";
-        private String partitionsCollectionName = "Partitions";
-        private String consumersCollectionName = "Consumers";
-    }
+    private String host = "localhost";
+    private int port = 27017;
+    private String databaseName = "Workinator";
+    private String partitionsCollectionName = "partiions";
+    private String consumersCollectionName = "consumers";
 }

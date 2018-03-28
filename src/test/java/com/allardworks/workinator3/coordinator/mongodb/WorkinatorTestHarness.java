@@ -29,6 +29,10 @@ public class WorkinatorTestHarness implements AutoCloseable {
         return new WorkerStatus(new WorkerId(new ConsumerRegistration(new ConsumerId(consumerId), ""), 1));
     }
 
+    public WorkinatorTester getTester() {
+        return tester;
+    }
+
     @Override
     public void close() throws Exception {
         tester.close();

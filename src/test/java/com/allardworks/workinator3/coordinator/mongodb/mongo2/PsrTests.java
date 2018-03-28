@@ -30,7 +30,10 @@ public class PsrTests {
         Logger rootLogger = loggerContext.getLogger("org.mongodb.driver");
         rootLogger.setLevel(Level.OFF);
 
-        val dal = new MongoDal(MongoConfiguration.builder().databaseName("test").build());
+        val config = new MongoConfiguration();
+        config.setDatabaseName("test");
+        val dal = new MongoDal(config);
+
         val cache = new PartitionConfigurationCache(dal);
         val workinator = new MongoWorkinator(dal, cache, new WhatsNextAssignmentStrategy(dal, cache));
         val assignments = new ArrayList<Assignment>();

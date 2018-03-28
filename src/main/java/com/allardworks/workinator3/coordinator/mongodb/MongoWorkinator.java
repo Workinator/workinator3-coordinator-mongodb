@@ -16,6 +16,7 @@ import com.allardworks.workinator3.core.Assignment;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static com.allardworks.workinator3.coordinator.mongodb.DocumentUtility.doc;
 import static com.allardworks.workinator3.core.ConvertUtility.MIN_DATE;
@@ -95,7 +96,9 @@ public class MongoWorkinator implements Workinator {
         val partitions = dal.getPartitionsCollection().find().iterator();
         partitions.forEachRemaining(doc -> {
             val workers = new ArrayList<WorkerInfo>();
-            val workersSource = (List<Document>)doc.get("status.workers");
+            val status = (Document)doc.get("status");
+            val workersSource = (List<Document>)status.get("workers");
+            val configuration = (Document)doc.get("configuration");
             workersSource.iterator().forEachRemaining(d -> workers.add(WorkerInfo.builder()
                     .assignee(d.getString("assignee"))
                     .createDate(d.getDate("insertDate"))
@@ -105,11 +108,11 @@ public class MongoWorkinator implements Workinator {
             result.add(PartitionInfo
                     .builder()
                     .partitionKey(doc.getString("partitionKey"))
-                    .currentWorkerCount(doc.getInteger("status.workerCount"))
-                    .hasMoreWork(doc.getBoolean("status.hasWork"))
-                    .lastChecked(doc.getDate("status.lastCheckedDate"))
-                    .maxIdleTimeSeconds(doc.getInteger("configuration.maxIdleTimeSeconds"))
-                    .maxWorkerCount(doc.getInteger("configuration.maxWorkerCount"))
+                    .currentWorkerCount(status.getInteger("workerCount"))
+                    .hasMoreWork(status.getBoolean("hasWork"))
+                    .lastChecked(status.getDate("lastCheckedDate"))
+                    .maxIdleTimeSeconds(configuration.getInteger("maxIdleTimeSeconds"))
+                    .maxWorkerCount(configuration.getInteger("maxWorkerCount"))
                     .workers(workers)
                     .build());
         });
