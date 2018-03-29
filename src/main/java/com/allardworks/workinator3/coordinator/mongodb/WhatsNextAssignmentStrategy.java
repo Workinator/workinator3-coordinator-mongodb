@@ -26,6 +26,14 @@ import static com.mongodb.client.model.ReturnDocument.AFTER;
 @Component
 @RequiredArgsConstructor
 public class WhatsNextAssignmentStrategy implements AssignmentStrategy {
+    // TODO: needs another rule.
+    // Create consumer, worker count = 10
+    // Create parttitions a,b,c,d,3 each with count of 10
+    // set each partiion to has work
+    // this should balance out to each 2 workers per partition. it doesn't.
+    // workers spin up as there is availability, but don't decrease to be fair.
+    // every partition will always have 1 worker, which is important, but not good enough.
+
     public final static String RULE1 = "Rule 1 - Not being worked on, and is due to be checked.";
     public final static String RULE2 = "Rule 2 - Already busy, so keep going.";
     public final static String RULE3 = "Rule 3 - Partition already being worked on, but supports more workers.";
