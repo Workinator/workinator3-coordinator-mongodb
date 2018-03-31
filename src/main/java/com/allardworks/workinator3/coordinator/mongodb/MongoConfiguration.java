@@ -13,6 +13,6 @@ public class MongoConfiguration {
     private String host = "localhost";
     private int port = 27017;
     private String databaseName = "Workinator";
-    private String partitionsCollectionName = "partiions";
+    private String partitionsCollectionName = "partitions";
     private String consumersCollectionName = "consumers";
 }

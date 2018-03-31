@@ -95,16 +95,19 @@ public class MongoWorkinator implements Workinator {
         val result = new ArrayList<PartitionInfo>();
         val partitions = dal.getPartitionsCollection().find().iterator();
         partitions.forEachRemaining(doc -> {
-            val workers = new ArrayList<WorkerInfo>();
+            // partition / workers
+            val workers = new ArrayList<PartitionWorkerInfo>();
             val status = (Document)doc.get("status");
             val workersSource = (List<Document>)status.get("workers");
-            val configuration = (Document)doc.get("configuration");
-            workersSource.iterator().forEachRemaining(d -> workers.add(WorkerInfo.builder()
+            workersSource.iterator().forEachRemaining(d -> workers.add(PartitionWorkerInfo
+                    .builder()
                     .assignee(d.getString("assignee"))
                     .createDate(d.getDate("insertDate"))
                     .rule(d.getString("rule"))
                     .build()));
 
+            // partition
+            val configuration = (Document)doc.get("configuration");
             result.add(PartitionInfo
                     .builder()
                     .partitionKey(doc.getString("partitionKey"))
@@ -115,6 +118,46 @@ public class MongoWorkinator implements Workinator {
                     .maxWorkerCount(configuration.getInteger("maxWorkerCount"))
                     .workers(workers)
                     .build());
+        });
+        return result;
+    }
+
+    @Override
+    public List<ConsumerInfo> getConsumers() {
+        val result = new ArrayList<ConsumerInfo>();
+        val consumers = dal.getConsumersCollection().find().iterator();
+        consumers.forEachRemaining(doc -> {
+            // consumer / workers
+            val workers = new ArrayList<ConsumerWorkerInfo>();
+            val status = (Document) doc.get("status");
+            if (status == null) {
+                return;
+            }
+            val workersSource = (List<Document>) status.get("workers");
+            workersSource.iterator().forEachRemaining(workerDoc -> {
+                val w = ConsumerWorkerInfo
+                        .builder()
+                        .workerNumber(workerDoc.getInteger("workerNumber"));
+                val assignmentDoc = (Document)workerDoc.get("assignment");
+                if (assignmentDoc != null) {
+                    w
+                            .assignmentDate(assignmentDoc.getDate("assignmentDate"))
+                            .partitionKey(assignmentDoc.getString("partitionKey"))
+                            .rule(assignmentDoc.getString("ruleName"));
+                }
+                workers.add(w.build());
+            });
+
+            // consumer
+            result.add(
+                    ConsumerInfo
+                            .builder()
+                            .name(doc.getString("name"))
+                            .connectedDate(doc.getDate("connectDate"))
+                            .maxWorkerCount(doc.getInteger("maxWorkerCount"))
+                            .workers(workers)
+                            .build()
+            );
         });
         return result;
     }

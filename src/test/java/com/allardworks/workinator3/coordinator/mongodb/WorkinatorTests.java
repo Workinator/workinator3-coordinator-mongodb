@@ -54,6 +54,25 @@ public abstract class WorkinatorTests {
     }
 
     @Test
+    public void getConsumers() throws Exception {
+        try (val tester = new WorkinatorTestHarness(getTester())) {
+            tester
+                    .createPartition("a")
+                    .createPartition("b")
+                    .createWorker("a")
+                    .createWorker("b");
+
+            val c1 = new ConsumerId("yadda");
+            val c2 = new ConsumerId("dabba");
+            tester.getTester().getWorkinator().registerConsumer(RegisterConsumerCommand.builder().id(c1).build());
+            tester.getTester().getWorkinator().registerConsumer(RegisterConsumerCommand.builder().id(c2).build());
+
+            val consumers = tester.getTester().getWorkinator().getConsumers();
+            assertEquals(2, consumers.size());
+        }
+    }
+
+    @Test
     public void doNotExceedMaxWorkerCount() throws Exception {
         val testSize = 10;
 

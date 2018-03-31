@@ -41,11 +41,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.allardworks.workinator3</groupId>
-			<artifactId>workinator3-coordinator</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
@@ -56,5 +51,11 @@
 			<version>3.7</version>
 		</dependency>
 
+		<!-- WORKINATOR dependencies -->
+		<dependency>
+			<groupId>com.allardworks.workinator3</groupId>
+			<artifactId>workinator3-coordinator</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>
