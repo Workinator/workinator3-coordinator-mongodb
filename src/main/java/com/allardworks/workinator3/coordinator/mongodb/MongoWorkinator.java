@@ -130,23 +130,22 @@ public class MongoWorkinator implements Workinator {
             // consumer / workers
             val workers = new ArrayList<ConsumerWorkerInfo>();
             val status = (Document) doc.get("status");
-            if (status == null) {
-                return;
+            if (status != null) {
+                val workersSource = (List<Document>) status.get("workers");
+                workersSource.iterator().forEachRemaining(workerDoc -> {
+                    val w = ConsumerWorkerInfo
+                            .builder()
+                            .workerNumber(workerDoc.getInteger("workerNumber"));
+                    val assignmentDoc = (Document) workerDoc.get("assignment");
+                    if (assignmentDoc != null) {
+                        w
+                                .assignmentDate(assignmentDoc.getDate("assignmentDate"))
+                                .partitionKey(assignmentDoc.getString("partitionKey"))
+                                .rule(assignmentDoc.getString("ruleName"));
+                    }
+                    workers.add(w.build());
+                });
             }
-            val workersSource = (List<Document>) status.get("workers");
-            workersSource.iterator().forEachRemaining(workerDoc -> {
-                val w = ConsumerWorkerInfo
-                        .builder()
-                        .workerNumber(workerDoc.getInteger("workerNumber"));
-                val assignmentDoc = (Document)workerDoc.get("assignment");
-                if (assignmentDoc != null) {
-                    w
-                            .assignmentDate(assignmentDoc.getDate("assignmentDate"))
-                            .partitionKey(assignmentDoc.getString("partitionKey"))
-                            .rule(assignmentDoc.getString("ruleName"));
-                }
-                workers.add(w.build());
-            });
 
             // consumer
             result.add(

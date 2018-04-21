@@ -6,6 +6,7 @@ import com.allardworks.workinator3.core.commands.CreatePartitionCommand;
 import com.allardworks.workinator3.core.commands.ReleaseAssignmentCommand;
 import com.allardworks.workinator3.core.commands.UpdateWorkersStatusCommand;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.var;
 import lombok.val;
 
 import java.util.ArrayList;
@@ -65,6 +66,13 @@ public class WorkinatorTestHarness implements AutoCloseable {
         return this;
     }
 
+    public WorkinatorTestHarness createWorkers(final String... workerNames) {
+        for (val w: workerNames) {
+            createWorker(w);
+        }
+        return this;
+    }
+
     private Assignment getAssignment(final String workerName) {
         val worker = workers.get(workerName);
         val assignment = tester.getWorkinator().getAssignment(worker);
@@ -106,6 +114,13 @@ public class WorkinatorTestHarness implements AutoCloseable {
     public WorkinatorTestHarness setWorkerHasWork(final String workerName) {
         val worker = workers.get(workerName);
         worker.setHasWork(true);
+        return this;
+    }
+
+    public WorkinatorTestHarness setWorkersHaveWork(final String... workers) {
+        for (val w : workers) {
+            setWorkerHasWork(w);
+        }
         return this;
     }
 

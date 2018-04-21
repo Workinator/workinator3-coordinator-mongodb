@@ -18,6 +18,8 @@ import static org.junit.Assert.assertNull;
 
 Use the WORKINATOR TEST HARNESS, as demonstrated in the A WHOLE BUNCH OF STUFF test.
 
+TODO: most of these should move to WHATS NEXT ASSIGNMENT STRATEGY TESTS
+
  */
 
 public abstract class WorkinatorTests {
@@ -463,6 +465,59 @@ public abstract class WorkinatorTests {
                     // now back to the others, which have work and multiple workeres
                     .assertGetAssignment("worker f", "aaa", RULE3)
                     .assertGetAssignment("worker g", "bbb", RULE3);
+        }
+    }
+
+    /**
+     * A partition is busy with max workers = 10.
+     * A single consumer with 10 workers will support that.
+     * If a second partition is created with max workers = 10, and is buy,
+     * then the consumer should dedicate 5 threads to each.
+     *
+     * 4/20/2018 - this doesn't work.
+     */
+    @Test
+    public void shouldBalanceWhenMultiplePartitionsMayHaveMultipleWorkers() throws Exception {
+        try (val tester = new WorkinatorTestHarness(getTester())) {
+            tester
+                    // create 3 partitions
+                    .createPartition("a", 10)
+                    .setPartitionHasWork("a")
+                    .createWorkers("worker a", "worker b", "worker c", "worker d", "worker e", "worker f", "worker g", "worker h", "worker i", "worker j")
+                    .assertGetAssignment("worker a", "a", RULE1)
+                    .assertGetAssignment("worker b", "a", RULE3)
+                    .assertGetAssignment("worker c", "a", RULE3)
+                    .assertGetAssignment("worker d", "a", RULE3)
+                    .assertGetAssignment("worker e", "a", RULE3)
+                    .assertGetAssignment("worker f", "a", RULE3)
+                    .assertGetAssignment("worker g", "a", RULE3)
+                    .assertGetAssignment("worker h", "a", RULE3)
+                    .assertGetAssignment("worker i", "a", RULE3)
+                    .assertGetAssignment("worker j", "a", RULE3)
+                    .setWorkersHaveWork("worker a", "worker b", "worker c", "worker d", "worker e", "worker f", "worker g", "worker h", "worker i", "worker j")
+
+                    .createPartition("b", 10)
+                    .setPartitionHasWork("b")
+
+                    // this is good because RULE 1 works correctly.
+                    .assertGetAssignment("worker a", "b", RULE1)
+
+                    // but, the next 4 should also return partition b. this is where it breaks.
+                    // workinator isn't looking at partitions that have multiple assignments
+                    // to determine if one should be scaled down to make room for the other.
+                    // in this case, once b comes on line, there should be 5 workers for a and 5 workers for b
+                    // these 4 will all fail
+                    .assertGetAssignment("worker b", "b", RULE3)
+                    .assertGetAssignment("worker c", "b", RULE3)
+                    .assertGetAssignment("worker d", "b", RULE3)
+                    .assertGetAssignment("worker e", "b", RULE3)
+
+                    // and still 5 allocated to a
+                    .assertGetAssignment("worker f", "a", RULE3)
+                    .assertGetAssignment("worker g", "a", RULE3)
+                    .assertGetAssignment("worker h", "a", RULE3)
+                    .assertGetAssignment("worker i", "a", RULE3)
+                    .assertGetAssignment("worker j", "a", RULE3);
         }
     }
 

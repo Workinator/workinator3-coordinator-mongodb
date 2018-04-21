@@ -160,12 +160,14 @@ public class WhatsNextAssignmentStrategy implements AssignmentStrategy {
          * @return
          */
         private Assignment ifBusyKeepGoing() {
+            return null;
+            /*
             // TODO: update db with new rule
             if (status.isHasWork()) {
                 return Assignment.setRule(status.getCurrentAssignment(), RULE2);
             }
 
-            return null;
+            return null;*/
         }
 
         /**

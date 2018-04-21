@@ -13,13 +13,19 @@ import static com.allardworks.workinator3.coordinator.mongodb.DocumentUtility.do
 public class MongoWorkinatorTester implements WorkinatorTester {
     private MongoDal dal;
 
-    @Override
-    public Workinator getWorkinator() {
+    private final Workinator workinator;
+
+    public MongoWorkinatorTester() {
         val config = new MongoConfiguration();
         config.setDatabaseName("test");
         dal = new MongoDal(config);
         val cache = new PartitionConfigurationCache(dal);
-        return new MongoWorkinator(dal, cache, new WhatsNextAssignmentStrategy(dal, cache));
+        workinator = new MongoWorkinator(dal, cache, new WhatsNextAssignmentStrategy(dal, cache));
+    }
+
+    @Override
+    public Workinator getWorkinator() {
+        return workinator;
     }
 
     public void setHasWork(final String partitionKey, final boolean hasWork) {
