@@ -9,7 +9,10 @@ import lombok.val;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.stream.Collectors;
+
 import static com.allardworks.workinator3.coordinator.mongodb.WhatsNextAssignmentStrategy.*;
+import static java.lang.System.out;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -93,7 +96,7 @@ public abstract class WorkinatorTests {
                 for (int i = 0; i < testSize; i++) {
                     val worker = new WorkerStatus(new WorkerId(registration, i));
                     val assignment = workinator.getAssignment(worker);
-                    System.out.println(i);
+                    out.println(i);
                     assertEquals("yadda", assignment.getPartitionKey());
                 }
 
@@ -561,6 +564,35 @@ public abstract class WorkinatorTests {
                     .assertGetAssignment("worker i", "a", RULE2)
                     .assertGetAssignment("worker j", "b", RULE2);
 
+        }
+    }
+
+    @Test
+    public void rulezzz() throws Exception {
+        try (val tester = new WorkinatorTestHarness(getTester())) {
+            tester
+                    .createPartition("a", 10)
+                    .createPartition("b", 10)
+                    .createPartition("c", 4)
+                    .setPartitionHasWork("a")
+                    .setPartitionHasWork("b")
+                    .setPartitionHasWork("c");
+
+            // consumer has 20 workers
+            // should end up with a = 8, b = 8, c = 4
+            val reg = new ConsumerRegistration(new ConsumerId("a"), "");
+            for (int i = 0; i < 20; i++) {
+                val status = new WorkerStatus(new WorkerId(reg, i));
+                tester.getTester().getWorkinator().getAssignment(status);
+            }
+
+            val partitions = tester.getTester().getWorkinator().getPartitions();
+            for (val p : partitions) {
+                out.println("--------------------\n" + p.getPartitionKey() + "\n------------------------");
+                for (val w : p.getWorkers()) {
+                    out.println(w.getAssignee());
+                }
+            }
         }
     }
 
