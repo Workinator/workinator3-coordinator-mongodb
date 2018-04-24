@@ -9,7 +9,6 @@ import lombok.val;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static com.allardworks.workinator3.coordinator.mongodb.DocumentUtility.doc;
 import static com.allardworks.workinator3.coordinator.mongodb.WhatsNextAssignmentStrategy.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -31,10 +30,11 @@ public abstract class WorkinatorTests {
 
     /**
      * Create and retrieve partitions.
-     *
+     * <p>
      * This exercises the GET part, for which a bug was discovered on 3/25/2018.
      * BSON.DOCUMENT doeesn't support dot notation, so values in child objects (status.workers)
      * were coming back null.
+     *
      * @throws Exception
      */
     @Test
@@ -260,17 +260,17 @@ public abstract class WorkinatorTests {
                 // TODO: fails because A has workercount=1
                 // need to fix that
                 val a1 = workinator.getAssignment(createStatus("zz"));
-                assertEquals(RULE3, a1.getRuleName());
+                assertEquals(RULE2, a1.getRuleName());
                 assertEquals("b", a1.getPartitionKey());
                 tester.setHasWork("b", false);
 
                 val a2 = workinator.getAssignment(createStatus("zz"));
-                assertEquals(RULE4, a2.getRuleName());
+                assertEquals(RULE3, a2.getRuleName());
                 assertEquals("a", a2.getPartitionKey());
 
                 val a3 = workinator.getAssignment(createStatus("zz"));
                 assertEquals("c", a3.getPartitionKey());
-                assertEquals(RULE4, a3.getRuleName());
+                assertEquals(RULE3, a3.getRuleName());
             }
         }
     }
@@ -300,15 +300,15 @@ public abstract class WorkinatorTests {
 
                 val a1 = workinator.getAssignment(createStatus("zz"));
                 assertEquals("a", a1.getPartitionKey());
-                assertEquals(RULE4, a1.getRuleName());
+                assertEquals(RULE3, a1.getRuleName());
 
                 val a2 = workinator.getAssignment(createStatus("zz"));
                 assertEquals("b", a2.getPartitionKey());
-                assertEquals(RULE4, a2.getRuleName());
+                assertEquals(RULE3, a2.getRuleName());
 
                 val a3 = workinator.getAssignment(createStatus("zz"));
                 assertEquals("c", a3.getPartitionKey());
-                assertEquals(RULE4, a3.getRuleName());
+                assertEquals(RULE3, a3.getRuleName());
             }
         }
     }
@@ -353,28 +353,28 @@ public abstract class WorkinatorTests {
 
                 val a4 = workinator.getAssignment(createStatus("consumer a"));
                 assertEquals("a", a4.getPartitionKey());
-                assertEquals(RULE3, a4.getRuleName());
+                assertEquals(RULE2, a4.getRuleName());
 
                 val a5 = workinator.getAssignment(createStatus("consumer b"));
                 assertEquals("b", a5.getPartitionKey());
-                assertEquals(RULE3, a5.getRuleName());
+                assertEquals(RULE2, a5.getRuleName());
 
                 val a6 = workinator.getAssignment(createStatus("consumer c"));
                 assertEquals("c", a6.getPartitionKey());
-                assertEquals(RULE3, a6.getRuleName());
+                assertEquals(RULE2, a6.getRuleName());
 
                 // release one, then get an assignment
                 // we'll get the same one back because rule 3 will see it has the fewest workers
                 workinator.releaseAssignment(new ReleaseAssignmentCommand(a2));
                 val a7 = workinator.getAssignment(createStatus("consumer b"));
                 assertEquals("b", a7.getPartitionKey());
-                assertEquals(RULE3, a7.getRuleName());
+                assertEquals(RULE2, a7.getRuleName());
             }
         }
     }
 
     @Test
-    public void RULE3_multipleConcurrency() throws Exception {
+    public void RULE2_multipleConcurrency() throws Exception {
         try (val tester = new WorkinatorTestHarness(getTester())) {
             tester
                     // setup the partition and 4 workers
@@ -392,8 +392,8 @@ public abstract class WorkinatorTests {
                     .saveWorkersStatus()
 
                     // b and c will be assigned to the same partition.
-                    .assertGetAssignment("worker b", "aaa", RULE3)
-                    .assertGetAssignment("worker c", "aaa", RULE3)
+                    .assertGetAssignment("worker b", "aaa", RULE2)
+                    .assertGetAssignment("worker c", "aaa", RULE2)
 
                     // max concurrency reached.
                     // next worker won't get an assignment.
@@ -402,7 +402,7 @@ public abstract class WorkinatorTests {
     }
 
     @Test
-    public void RULE3_MultipleConcurrency() throws Exception {
+    public void RULE2_MultipleConcurrency() throws Exception {
         try (val tester = new WorkinatorTestHarness(getTester())) {
             tester
                     // setup the partition and 4 workers
@@ -420,10 +420,10 @@ public abstract class WorkinatorTests {
 
                     .assertGetAssignment("worker a", "aaa", RULE1)
                     .assertGetAssignment("worker b", "bbb", RULE1)
-                    .assertGetAssignment("worker c", "aaa", RULE3)
-                    .assertGetAssignment("worker d", "bbb", RULE3)
-                    .assertGetAssignment("worker e", "aaa", RULE3)
-                    .assertGetAssignment("worker f", "bbb", RULE3)
+                    .assertGetAssignment("worker c", "aaa", RULE2)
+                    .assertGetAssignment("worker d", "bbb", RULE2)
+                    .assertGetAssignment("worker e", "aaa", RULE2)
+                    .assertGetAssignment("worker f", "bbb", RULE2)
 
                     // max concurrency reached for both partitions
                     // next worker won't get an assignment.
@@ -433,10 +433,11 @@ public abstract class WorkinatorTests {
 
     /**
      * New partitions always get priority.
+     *
      * @throws Exception
      */
     @Test
-    public void RULE3_MultipleConcurrencyAcrossPartitions_TrumpedByRule1() throws Exception {
+    public void RULE2_MultipleConcurrencyAcrossPartitions_TrumpedByRule1() throws Exception {
         try (val tester = new WorkinatorTestHarness(getTester())) {
             tester
                     // setup the partition and 4 workers
@@ -455,16 +456,16 @@ public abstract class WorkinatorTests {
                     // assignments will alternate
                     .assertGetAssignment("worker a", "aaa", RULE1)
                     .assertGetAssignment("worker b", "bbb", RULE1)
-                    .assertGetAssignment("worker c", "aaa", RULE3)
-                    .assertGetAssignment("worker d", "bbb", RULE3)
+                    .assertGetAssignment("worker c", "aaa", RULE2)
+                    .assertGetAssignment("worker d", "bbb", RULE2)
 
                     // now create a new partition. it will get priority.
                     .createPartition("ccc")
                     .assertGetAssignment("worker e", "ccc", RULE1)
 
                     // now back to the others, which have work and multiple workeres
-                    .assertGetAssignment("worker f", "aaa", RULE3)
-                    .assertGetAssignment("worker g", "bbb", RULE3);
+                    .assertGetAssignment("worker f", "aaa", RULE2)
+                    .assertGetAssignment("worker g", "bbb", RULE2);
         }
     }
 
@@ -473,7 +474,7 @@ public abstract class WorkinatorTests {
      * A single consumer with 10 workers will support that.
      * If a second partition is created with max workers = 10, and is buy,
      * then the consumer should dedicate 5 threads to each.
-     *
+     * <p>
      * 4/20/2018 - this doesn't work.
      */
     @Test
@@ -485,39 +486,113 @@ public abstract class WorkinatorTests {
                     .setPartitionHasWork("a")
                     .createWorkers("worker a", "worker b", "worker c", "worker d", "worker e", "worker f", "worker g", "worker h", "worker i", "worker j")
                     .assertGetAssignment("worker a", "a", RULE1)
-                    .assertGetAssignment("worker b", "a", RULE3)
-                    .assertGetAssignment("worker c", "a", RULE3)
-                    .assertGetAssignment("worker d", "a", RULE3)
-                    .assertGetAssignment("worker e", "a", RULE3)
-                    .assertGetAssignment("worker f", "a", RULE3)
-                    .assertGetAssignment("worker g", "a", RULE3)
-                    .assertGetAssignment("worker h", "a", RULE3)
-                    .assertGetAssignment("worker i", "a", RULE3)
-                    .assertGetAssignment("worker j", "a", RULE3)
+                    .assertGetAssignment("worker b", "a", RULE2)
+                    .assertGetAssignment("worker c", "a", RULE2)
+                    .assertGetAssignment("worker d", "a", RULE2)
+                    .assertGetAssignment("worker e", "a", RULE2)
+                    .assertGetAssignment("worker f", "a", RULE2)
+                    .assertGetAssignment("worker g", "a", RULE2)
+                    .assertGetAssignment("worker h", "a", RULE2)
+                    .assertGetAssignment("worker i", "a", RULE2)
+                    .assertGetAssignment("worker j", "a", RULE2)
                     .setWorkersHaveWork("worker a", "worker b", "worker c", "worker d", "worker e", "worker f", "worker g", "worker h", "worker i", "worker j")
 
                     .createPartition("b", 10)
                     .setPartitionHasWork("b")
 
-                    // this is good because RULE 1 works correctly.
+                    // 5 to b
                     .assertGetAssignment("worker a", "b", RULE1)
-
-                    // but, the next 4 should also return partition b. this is where it breaks.
-                    // workinator isn't looking at partitions that have multiple assignments
-                    // to determine if one should be scaled down to make room for the other.
-                    // in this case, once b comes on line, there should be 5 workers for a and 5 workers for b
-                    // these 4 will all fail
-                    .assertGetAssignment("worker b", "b", RULE3)
-                    .assertGetAssignment("worker c", "b", RULE3)
-                    .assertGetAssignment("worker d", "b", RULE3)
-                    .assertGetAssignment("worker e", "b", RULE3)
+                    .assertGetAssignment("worker b", "b", RULE2)
+                    .assertGetAssignment("worker c", "b", RULE2)
+                    .assertGetAssignment("worker d", "b", RULE2)
+                    .assertGetAssignment("worker e", "b", RULE2)
 
                     // and still 5 allocated to a
-                    .assertGetAssignment("worker f", "a", RULE3)
-                    .assertGetAssignment("worker g", "a", RULE3)
-                    .assertGetAssignment("worker h", "a", RULE3)
-                    .assertGetAssignment("worker i", "a", RULE3)
-                    .assertGetAssignment("worker j", "a", RULE3);
+                    .assertGetAssignment("worker f", "a", RULE2)
+                    .assertGetAssignment("worker g", "a", RULE2)
+                    .assertGetAssignment("worker h", "a", RULE2)
+                    .assertGetAssignment("worker i", "a", RULE2)
+                    .assertGetAssignment("worker j", "a", RULE2)
+
+                    // -----------------------------------------------------------------------
+                    // add partition c with work and 2 workers
+                    // will end up with c = 2, a = 4, b = 4
+                    // -----------------------------------------------------------------------
+                    .createPartition("c", 2)
+                    .setPartitionHasWork("c")
+                    .assertGetAssignment("worker a", "c", RULE1)
+                    .assertGetAssignment("worker b", "c", RULE2)
+
+                    .assertGetAssignment("worker c", "b", RULE2)
+                    .assertGetAssignment("worker d", "b", RULE2)
+                    .assertGetAssignment("worker e", "b", RULE2)
+                    .assertGetAssignment("worker j", "b", RULE2)
+
+                    .assertGetAssignment("worker f", "a", RULE2)
+                    .assertGetAssignment("worker g", "a", RULE2)
+                    .assertGetAssignment("worker h", "a", RULE2)
+                    .assertGetAssignment("worker i", "a", RULE2)
+
+                    // -----------------------------------------------------------------------
+                    // add partitions d and e with work and 1 workers each.
+                    // a = 3, b = 3, c = 2, d = 1, e = 1
+                    // -----------------------------------------------------------------------
+                    .createPartition("d", 1)
+                    .createPartition("e", 1)
+                    .setPartitionHasWork("d")
+                    .setPartitionHasWork("e")
+
+                    // these are new. never did work before, so highest priority.
+                    .assertGetAssignment("worker a", "d", RULE1)
+                    .assertGetAssignment("worker b", "e", RULE1)
+
+                    // these don't have any workers, but we know they have work,
+                    // so they're next
+                    .assertGetAssignment("worker c", "c", RULE1)
+                    .assertGetAssignment("worker d", "c", RULE2)
+
+                    // this isn't fully explored. we could explain why each of these result
+                    // in their assignments. in general, though, by the time it's done,
+                    // all partitions have the proper number of workers.
+                    .assertGetAssignment("worker e", "b", RULE2)
+                    .assertGetAssignment("worker f", "b", RULE2)
+                    .assertGetAssignment("worker g", "a", RULE2)
+                    .assertGetAssignment("worker h", "a", RULE2)
+                    .assertGetAssignment("worker i", "a", RULE2)
+                    .assertGetAssignment("worker j", "b", RULE2);
+
+        }
+    }
+
+    /**
+     * Get an assignment and release it.
+     * Assure that the workers increase to 1 then decrease to 0.
+     * 4/22/2018: i changed the assignment id to be based on receipt. As I worked on that,
+     * I saw that no tests were failing. Thus, tests for release are lacking.
+     * This is a very basic test, but shows that the RECEIPT approach is working.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void release() throws Exception {
+        try (val tester = new WorkinatorTestHarness(getTester())) {
+            tester.createPartition("a");
+
+            val workerStatus = new WorkerStatus(new WorkerId(new ConsumerRegistration(new ConsumerId("boo"), ""), 1));
+            val assignment = tester.getTester().getWorkinator().getAssignment(workerStatus);
+
+            {
+                val partitions1 = tester.getTester().getWorkinator().getPartitions();
+                assertEquals(1, partitions1.size());
+                assertEquals(1, partitions1.get(0).getWorkers().size());
+            }
+            tester.getTester().getWorkinator().releaseAssignment(new ReleaseAssignmentCommand(assignment));
+
+            {
+                val partitions2 = tester.getTester().getWorkinator().getPartitions();
+                assertEquals(1, partitions2.size());
+                assertEquals(0, partitions2.get(0).getWorkers().size());
+            }
         }
     }
 
@@ -556,7 +631,7 @@ public abstract class WorkinatorTests {
                     // now d will get it
                     // RULE 4 because it's not due and doesn't have work.
                     // RULE 4 is first partition where worker count = 0
-                    .assertGetAssignment("worker d", "b", RULE4)
+                    .assertGetAssignment("worker d", "b", RULE3)
 
                     // ---------------------------------------------
                     // RULE 2
@@ -570,12 +645,12 @@ public abstract class WorkinatorTests {
                     // RULE 5
                     // ---------------------------------------------
                     // c doesn't have work, and there aren't any partitions due.
-                    // RULE2 and RULE3 are for when there is work. there isn't.
-                    // RULE4 won't find this partition because it's still assigned.
-                    // RULE5 will prevail... nothing better to do, so do what you're doing
+                    // RULE2 and RULE2 are for when there is work. there isn't.
+                    // RULE3 won't find this partition because it's still assigned.
+                    // RULE4 will prevail... nothing better to do, so do what you're doing
                     // even though there isn't work.
                     .setWorkerDoesntHaveWork("worker c")
-                    .assertGetAssignment("worker c", "c", RULE5);
+                    .assertGetAssignment("worker c", "c", RULE4);
         }
     }
 }

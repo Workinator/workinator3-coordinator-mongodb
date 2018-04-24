@@ -67,7 +67,7 @@ public class WorkinatorTestHarness implements AutoCloseable {
     }
 
     public WorkinatorTestHarness createWorkers(final String... workerNames) {
-        for (val w: workerNames) {
+        for (val w : workerNames) {
             createWorker(w);
         }
         return this;
@@ -80,8 +80,26 @@ public class WorkinatorTestHarness implements AutoCloseable {
         return assignment;
     }
 
+    /**
+     * Gets a new assignment.
+     *
+     * @param workerName
+     * @param expectedPartitionKey
+     * @param expectedRule
+     * @return
+     */
     public WorkinatorTestHarness assertGetAssignment(final String workerName, final String expectedPartitionKey, final String expectedRule) {
+        val existing = assignments.get(workerName);
+
+        // get the new assignment
         val assignment = getAssignment(workerName);
+
+        // release the old one if it's different
+        // todo: a little hacky. WorkerRunnerProvider is doing the same thing.
+        if (existing != null && !existing.getPartitionKey().equals(assignment.getPartitionKey())) {
+            tester.getWorkinator().releaseAssignment(new ReleaseAssignmentCommand(existing));
+        }
+
         assertEquals(expectedPartitionKey, assignment.getPartitionKey());
         assertEquals(expectedRule, assignment.getRuleName());
         assignments.put(workerName, assignment);

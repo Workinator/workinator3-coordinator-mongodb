@@ -1,0 +1,1 @@
+db.partitions.find().projection({ partitionKey:1, "status.workerCount": 1 }).pretty()

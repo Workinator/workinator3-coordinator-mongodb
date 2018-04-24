@@ -1,10 +1,7 @@
 package com.allardworks.workinator3.coordinator.mongodb;
 
 import com.allardworks.workinator3.core.PartitionConfiguration;
-import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.ServerAddress;
+import com.mongodb.*;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
@@ -49,6 +46,7 @@ public class MongoDal implements AutoCloseable {
                 MongoClientOptions
                 .builder()
                 .codecRegistry(pojoCodecRegistry)
+                        .writeConcern(WriteConcern.MAJORITY)
                 .build();
 
 
