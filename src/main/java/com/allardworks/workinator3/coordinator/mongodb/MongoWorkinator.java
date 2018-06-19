@@ -71,22 +71,16 @@ public class MongoWorkinator implements Workinator {
     }
 
     @Override
-    public void updateWorkerStatus(final UpdateWorkersStatusCommand workerStatus) {
-        for (val status : workerStatus.getStatus()) {
-            if (status.getCurrentAssignment() == null) {
-                continue;
-            }
+    public void setPartitionStatus(SetPartitionStatusCommand command) {
+        try {
+            val updatePartition = doc("$set", doc(
+                    "status.hasWork", command.isHasWork(),
+                    "status.lastCheckedDate", new Date()));
 
-            try {
-                val updatePartition = doc("$set", doc(
-                        "status.hasWork", status.isHasWork(),
-                        "status.lastCheckedDate", new Date()));
-
-                val find = doc("partitionKey", status.getCurrentAssignment().getPartitionKey());
-                dal.getPartitionsCollection().updateOne(find, updatePartition);
-            } catch (final Exception ex) {
-                log.error("Error updating worker status.", ex);
-            }
+            val find = doc("partitionKey", command.getPartitionKey());
+            dal.getPartitionsCollection().updateOne(find, updatePartition);
+        } catch (final Exception ex) {
+            log.error("Error updating worker status.", ex);
         }
     }
 
@@ -97,8 +91,8 @@ public class MongoWorkinator implements Workinator {
         partitions.forEachRemaining(doc -> {
             // partition / workers
             val workers = new ArrayList<PartitionWorkerInfo>();
-            val status = (Document)doc.get("status");
-            val workersSource = (List<Document>)status.get("workers");
+            val status = (Document) doc.get("status");
+            val workersSource = (List<Document>) status.get("workers");
             workersSource.iterator().forEachRemaining(d -> workers.add(PartitionWorkerInfo
                     .builder()
                     .assignee(d.getString("assignee"))
@@ -107,7 +101,7 @@ public class MongoWorkinator implements Workinator {
                     .build()));
 
             // partition
-            val configuration = (Document)doc.get("configuration");
+            val configuration = (Document) doc.get("configuration");
             result.add(PartitionInfo
                     .builder()
                     .partitionKey(doc.getString("partitionKey"))
@@ -164,6 +158,7 @@ public class MongoWorkinator implements Workinator {
     /**
      * Retrieves and caches partition configuration objects.
      * They are cached for 5 minutes.
+     *
      * @param partitionKey
      * @return
      */

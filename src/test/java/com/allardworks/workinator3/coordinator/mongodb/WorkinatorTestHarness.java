@@ -1,13 +1,11 @@
 package com.allardworks.workinator3.coordinator.mongodb;
 
-import com.allardworks.workinator3.coordinator.mongodb.WorkinatorTester;
 import com.allardworks.workinator3.core.*;
 import com.allardworks.workinator3.core.commands.CreatePartitionCommand;
 import com.allardworks.workinator3.core.commands.ReleaseAssignmentCommand;
-import com.allardworks.workinator3.core.commands.UpdateWorkersStatusCommand;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.var;
 import lombok.val;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -112,8 +110,9 @@ public class WorkinatorTestHarness implements AutoCloseable {
     }
 
     public WorkinatorTestHarness saveWorkersStatus() {
-        tester.getWorkinator().updateWorkerStatus(new UpdateWorkersStatusCommand(new ArrayList<>(workers.values())));
-        return this;
+        throw new NotImplementedException();
+        //tester.getWorkinator().updateWorkerStatus(new UpdateWorkersStatusCommand(new ArrayList<>(workers.values())));
+        //return this;
     }
 
     public WorkinatorTestHarness assertNullAssignment(final String workerName) {
@@ -130,9 +129,10 @@ public class WorkinatorTestHarness implements AutoCloseable {
     }
 
     public WorkinatorTestHarness setWorkerHasWork(final String workerName) {
-        val worker = workers.get(workerName);
-        worker.setHasWork(true);
-        return this;
+        throw new NotImplementedException();
+        //val worker = workers.get(workerName);
+        //worker.setHasWork(true);
+        //return this;
     }
 
     public WorkinatorTestHarness setWorkersHaveWork(final String... workers) {
@@ -143,8 +143,9 @@ public class WorkinatorTestHarness implements AutoCloseable {
     }
 
     public WorkinatorTestHarness setWorkerDoesntHaveWork(final String workerName) {
-        val worker = workers.get(workerName);
-        worker.setHasWork(false);
-        return this;
+        throw new NotImplementedException();
+        //val worker = workers.get(workerName);
+        //worker.setHasWork(false);
+        //return this;
     }
 }

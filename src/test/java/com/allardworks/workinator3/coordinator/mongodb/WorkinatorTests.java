@@ -8,6 +8,7 @@ import com.allardworks.workinator3.core.commands.UnregisterConsumerCommand;
 import lombok.val;
 import org.junit.Assert;
 import org.junit.Test;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.stream.Collectors;
 
@@ -126,10 +127,12 @@ public abstract class WorkinatorTests {
 
                 // nothing is due, and current assignment has work,
                 // so keep with current assignment.
-                worker1.setHasWork(true);
-                val assignment2 = workinator.getAssignment(worker1);
-                assertEquals(RULE2, assignment2.getRuleName());
-                assertEquals(assignment1.getPartitionKey(), assignment2.getPartitionKey());
+                throw new NotImplementedException();
+
+                //worker1.setHasWork(true);
+                //val assignment2 = workinator.getAssignment(worker1);
+                //assertEquals(RULE2, assignment2.getRuleName());
+                //assertEquals(assignment1.getPartitionKey(), assignment2.getPartitionKey());
             }
         }
     }
